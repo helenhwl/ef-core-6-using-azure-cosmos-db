@@ -31,6 +31,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using TransportApp.Data;
+using TransportApp.Domain;
 
 namespace TransportApp.Service
 {
@@ -49,21 +50,69 @@ namespace TransportApp.Service
     private readonly IDbContextFactory<TransportContext> contextFactory;
     private readonly WriteLine writeLine;
 
-    private async Task RecreateDatabase()
-    {
-      using var context = await contextFactory.CreateDbContextAsync();
-
-      await context.Database.EnsureDeletedAsync();
-      await context.Database.EnsureCreatedAsync();
+        private async Task RecreateDatabase()
+        {
+            using var context = await contextFactory.CreateDbContextAsync();
+            await context.Database.EnsureDeletedAsync();
+            await context.Database.EnsureCreatedAsync();
     }
 
     #endregion
 
     public async Task RunSample()
     {
-      await RecreateDatabase();
+            await RecreateDatabase();
 
-      // TODO
+            await AddItems();
     }
-  }
+
+        private async Task AddItems()
+        {
+            writeLine();
+            writeLine("Start writing");
+            using var context = await contextFactory.CreateDbContextAsync();
+            context.Add(new Address
+            {
+                AddressId = $"{nameof(Address)}-1",
+                State = "Utah",
+                City = "Salt Lake City",
+                Street = "Course Road",
+                HouseNumber = "1234"
+            });
+            context.Add(
+                new Driver
+                {
+                    DriverId = $"{nameof(Driver)}-1",
+                    FirstName = "Jurgen",
+                    LastName = "Kevelaers",
+                    EmploymentBeginUtc = new DateTime(2022, 1, 17, 9, 0, 0, DateTimeKind.Utc)
+                });
+            context.Add(
+                new Vehicle
+                {
+                    VehicleId = $"{nameof(Vehicle)}-1",
+                    Make = "Pluralsight",
+                    Model = "Buggy",
+                    Year = 2018,
+                    LicensePlate = "2GAT123",
+                    Mileage = 12800,
+                    PassengerSeatCount = 6
+                });
+            context.Add(
+                new Trip
+                {
+                    TripId = $"{nameof(Trip)}-1",
+                    BeginUtc = new DateTime(2022, 3, 23, 10, 45, 0, DateTimeKind.Utc),
+                    EndUtc = new DateTime(2022, 3, 23, 11, 17, 0, DateTimeKind.Utc),
+                    PassengerCount = 2
+                });
+            await context.SaveChangesAsync();
+            writeLine("Save Successful");
+
+
+
+
+
+        }
+    }
 }

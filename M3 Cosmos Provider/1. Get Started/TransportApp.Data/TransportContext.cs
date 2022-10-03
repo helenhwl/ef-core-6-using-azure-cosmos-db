@@ -42,10 +42,10 @@ namespace TransportApp.Data
 
     #region DbSets
 
-    public DbSet<Driver> Drivers { get; set; }
-    public DbSet<Vehicle> Vehicles { get; set; }
-    public DbSet<Address> Addresses { get; set; }
-    public DbSet<Trip> Trips { get; set; }
+    public DbSet<Driver>? Drivers { get; set; }
+    public DbSet<Vehicle>? Vehicles { get; set; }
+    public DbSet<Address>? Addresses { get; set; }
+    public DbSet<Trip>? Trips { get; set; }
 
     #endregion
 
@@ -66,7 +66,24 @@ namespace TransportApp.Data
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-      // TODO
-    }
+            modelBuilder.HasManualThroughput(600);
+           // modelBuilder.HasDefaultContainer("AllInOne");
+            modelBuilder.Entity<Address>()
+                .Property(address => address.HouseNumber)
+                .ToJsonProperty("StreetHouseNumber");
+            modelBuilder.Entity<Address>()
+                .HasNoDiscriminator()
+                .ToContainer(nameof(Address))
+                .HasPartitionKey(Address => Address.State);
+            modelBuilder.Entity<Driver>()
+                .HasNoDiscriminator().ToContainer(nameof(Driver));
+            modelBuilder.Entity<Vehicle>()
+                .HasNoDiscriminator()
+                .ToContainer(nameof(Vehicle))
+                .HasPartitionKey(vehicle => vehicle.Make);
+            modelBuilder.Entity<Trip>()
+                .HasNoDiscriminator()?
+                .ToContainer(nameof(Trip));
+     }          
   }
 }
